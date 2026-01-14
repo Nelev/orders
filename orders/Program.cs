@@ -34,6 +34,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
+// Add exception handler
+app.UseExceptionHandler("/error");
+
 // Dev-only OpenAPI
 if (app.Environment.IsDevelopment())
 {

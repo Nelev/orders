@@ -17,7 +17,6 @@ public class OrdersController : ControllerBase
     public async Task<IEnumerable<Order>> GetOrders()
     {
         List<Order> orders = await _context.Orders.ToListAsync();
-        Console.WriteLine(orders);
         return await _context.Orders.ToListAsync();
     }
 }
