@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using orders.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,11 +29,21 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Register SignalR
+builder.Services.AddSignalR();
+
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
+
+// Add websockets
+app.UseWebSockets();
+
+
+// Add SignalR
+app.MapHub<OrderStatusHub>("/order-status");
 
 // Add exception handler
 app.UseExceptionHandler("/error");
