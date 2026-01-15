@@ -27,5 +27,11 @@ public class OrdersController : ControllerBase
         await _context.SaveChangesAsync(); 
         return CreatedAtAction(nameof(GetOrderById), new { id = order.Id }, order); 
     }
-    [HttpGet("{id}")] public async Task<IActionResult> GetOrderById(Guid id) { var order = await _context.Orders.FindAsync(id); if (order == null) return NotFound(); return Ok(order); }
+    [HttpGet("{id}")] 
+    public async Task<IActionResult> GetOrderById(Guid id) 
+    { 
+        var order = await _context.Orders.FindAsync(id); 
+        if (order == null) return NotFound(); 
+        return Ok(order); 
+    }
 }
