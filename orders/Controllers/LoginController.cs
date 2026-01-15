@@ -16,8 +16,11 @@ namespace orders.Controllers
                 return Unauthorized();
             }
             HttpContext.Session.SetString("Username", request.Email);
-            return Ok(new { Token = "dummy-jwt-token" });
+            return Ok(new { Token = "jwt-token" });
         }
-        [HttpPost] public IActionResult Logout() { HttpContext.Session.Remove("Username"); return Ok("Logged out"); }
+        [HttpPost] public IActionResult Logout() { 
+            HttpContext.Session.Remove("Username"); 
+            return Ok("Logged out"); 
+        }
     }
 }
