@@ -32,15 +32,35 @@ builder.Services.AddCors(options =>
 // Register SignalR
 builder.Services.AddSignalR();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddDistributedMemoryCache(); 
+builder.Services.AddSession(options => 
+{ 
+    options.IdleTimeout = TimeSpan.FromMinutes(30); 
+    options.Cookie.HttpOnly = true; 
+    options.Cookie.IsEssential = true; 
+});
+
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
+// Add routing, session, and authorization middlewares
+app.UseRouting();
+app.UseSession();
+app.UseAuthorization();
+
 // Add websockets
 app.UseWebSockets();
 
+// Apply migrations automatically
+using (var scope = app.Services.CreateScope())
+{ 
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>(); 
+    db.Database.Migrate(); 
+}
 
 // Add SignalR
 app.MapHub<OrderStatusHub>("/order-status");
@@ -57,11 +77,7 @@ if (app.Environment.IsDevelopment())
 // Enable CORS
 app.UseCors();
 
-// You can keep this — it redirects HTTP → HTTPS,
-// but since you're not listening on HTTP, it won't hurt.
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
 
 app.MapControllers();
 
