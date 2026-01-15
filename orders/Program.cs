@@ -32,6 +32,7 @@ builder.Services.AddCors(options =>
 // Register SignalR
 builder.Services.AddSignalR();
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache(); 
 builder.Services.AddSession(options => 
 { 

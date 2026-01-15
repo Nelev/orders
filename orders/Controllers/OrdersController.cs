@@ -17,6 +17,8 @@ public class OrdersController : ControllerBase
     public async Task<IEnumerable<Order>> GetOrders()
     {
         List<Order> orders = await _context.Orders.ToListAsync();
+        var username = HttpContext.Session.GetString("Username");
+        Console.WriteLine(username);
         return await _context.Orders.ToListAsync();
     }
     [HttpPost]
