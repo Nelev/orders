@@ -8,7 +8,7 @@ builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenLocalhost(5080, listenOptions =>
     {
-        listenOptions.UseHttps(); // uses the dev certificate
+        listenOptions.UseHttps();
     });
 });
 
@@ -18,14 +18,15 @@ builder.Services.AddControllers();
 // OpenAPI
 builder.Services.AddOpenApi();
 
-// CORS policy (required before UseCors)
+// CORS policy
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("SignalRPolicy", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("null") // allow file:// origins
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -33,12 +34,12 @@ builder.Services.AddCors(options =>
 builder.Services.AddSignalR();
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddDistributedMemoryCache(); 
-builder.Services.AddSession(options => 
-{ 
-    options.IdleTimeout = TimeSpan.FromMinutes(30); 
-    options.Cookie.HttpOnly = true; 
-    options.Cookie.IsEssential = true; 
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
 });
 
 // Database
@@ -47,25 +48,26 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-// Add routing, session, and authorization middlewares
+// CORS MUST be before routing
+app.UseCors("SignalRPolicy");
+
 app.UseRouting();
 app.UseSession();
 app.UseAuthorization();
 
-// Add websockets
 app.UseWebSockets();
 
-// Apply migrations automatically
+// Apply migrations
 using (var scope = app.Services.CreateScope())
-{ 
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>(); 
-    db.Database.Migrate(); 
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
 }
 
-// Add SignalR
+// Map SignalR hub
 app.MapHub<OrderStatusHub>("/order-status");
 
-// Add exception handler
+// Exception handler
 app.UseExceptionHandler("/error");
 
 // Dev-only OpenAPI
@@ -74,11 +76,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-// Enable CORS
-app.UseCors();
-
 app.UseHttpsRedirection();
-
 app.MapControllers();
 
 app.Run();
