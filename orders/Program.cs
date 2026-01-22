@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using orders.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,6 +33,11 @@ builder.Services.AddCors(options =>
 
 // Register SignalR
 builder.Services.AddSignalR();
+
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+});
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache();
